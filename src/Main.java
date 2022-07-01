@@ -13,13 +13,80 @@ public class Main {
         System.out.println();
         FileService movies = readMovies();
         System.out.println("-----------------------------Не отсортированная коллекция---------------------------------");
-
         printMovies(movies);
         sortByDirector(movies);
         sortByName(movies);
         sortByYear(movies);
         searchMovieByDirector(movies);
         searchMovieByName(movies);
+        searchMovieByActor(movies);
+        searchMovieByYear(movies);
+        searchMovieAndRoleByActor(movies);
+        printAllActors(movies);
+    }
+
+
+    static void printAllActors(FileService movies){
+        Map<String, List<String[]>> actor = new HashMap<>();
+
+        for(var movie: movies.getMovies()){
+            for(var cast : movie.getCasts()){
+                actor.put(cast.getFullName(), getMovieNameAndRoleByActor(cast.getFullName(), movies.getMovies()));
+            }
+        }
+        System.out.println("----------------Список всех актеров----------------");
+        System.out.println("---------------------------------------------------");
+        for(Map.Entry<String, List<String[]>> kv: actor.entrySet()){
+            System.out.println(kv.getKey() + " cнимаeтся в фильмах:");
+            for(var movie: kv.getValue()){
+                System.out.println("Фильм: " + movie[0] + "\nРоль: " + movie[1]);
+
+            }
+            System.out.println("---------------------------------------------------");
+        }
+    }
+    public static List<String> getMovieName(String name, List<Movie> movies){
+        List<String> old_movies = new ArrayList<>();
+        for(var movie: movies){
+            if(movie.getDirectors().getFullName().contains(name)){
+                old_movies.add(movie.getName());
+            }
+        }
+        return old_movies;
+    }
+
+    public static List<String> getMovieNameByActor(String name, List<Movie> movies){
+        List<String> old_movies = new ArrayList<>();
+        for(var movie: movies){
+            for(var cast : movie.getCasts()){
+                if(cast.getFullName().contains(name)){
+                    old_movies.add(movie.getName());
+                }
+            }
+        }
+        return old_movies;
+    }
+
+    public static List<String[]> getMovieNameAndRoleByActor(String name, List<Movie> movies){
+        List<String[]> old_movies = new ArrayList<>();
+        for(var movie: movies){
+            for(var cast : movie.getCasts()){
+                if(cast.getFullName().contains(name)){
+                    old_movies.add(new String[]{movie.getName(), cast.getRole()});
+                }
+            }
+        }
+        return old_movies;
+    }
+
+    public static List<String> getMovieNameByYear(Integer year, List<Movie> movies){
+        List<String> old_movies = new ArrayList<>();
+        for(var movie: movies){
+            if(movie.getYear() == year){
+                old_movies.add(movie.getName());
+            }
+        }
+        return old_movies;
     }
 
     public static void printMovies(FileService movies){
@@ -36,18 +103,114 @@ public class Main {
 
     public static void searchMovieByDirector(FileService movies){
         Scanner sc = new Scanner(System.in);
-        Map<Director, Movie> directorMovieMap =
-                movies.getMovies().stream().collect(Collectors.toMap(Movie::getDirectors, item -> item));
-        System.out.printf("Введите частичное или полное ФИО режиссера: ");
-        String text1 = sc.nextLine();
         boolean check = false;
-        for(Map.Entry<Director, Movie> kv: directorMovieMap.entrySet()){
-            if(kv.getKey().getFullName().toLowerCase().contains(text1.toLowerCase(Locale.ROOT))){
-                System.out.println("Фильмы - " + kv.getValue().getName());
+        Map<String, List<String>> director = new HashMap<>();
+
+        for(var movie: movies.getMovies()){
+            director.put(movie.getDirectors().getFullName(), getMovieName(movie.getDirectors().getFullName(), movies.getMovies()));
+        }
+        System.out.print("Введите частичное или полное имя режиссера: ");
+        String text = sc.nextLine();
+        for(Map.Entry<String, List<String>> kv: director.entrySet()){
+            if(kv.getKey().toLowerCase().contains(text.toLowerCase(Locale.ROOT))){
+                System.out.println(kv.getKey() + " фильмы:");
+                for(var movie: kv.getValue()){
+                    System.out.println("Фильм: " + movie);
+
+                }
                 check = true;
             }
         }
         if(!check) System.out.println("Фильмов с таким режиссером нету!");
+    }
+
+    public static void searchMovieByActor(FileService movies){
+        Scanner sc = new Scanner(System.in);
+        boolean check = false;
+        Map<String, List<String>> actor = new HashMap<>();
+
+        for(var movie: movies.getMovies()){
+            for(var cast : movie.getCasts()){
+                actor.put(cast.getFullName(), getMovieNameByActor(cast.getFullName(), movies.getMovies()));
+            }
+        }
+        System.out.print("Введите частичное или полное имя актера: ");
+        String text = sc.nextLine();
+        for(Map.Entry<String, List<String>> kv: actor.entrySet()){
+            if(kv.getKey().toLowerCase().contains(text.toLowerCase(Locale.ROOT))){
+                System.out.println(kv.getKey() + " cнимаeтся в фильмах:");
+                for(var movie: kv.getValue()){
+                    System.out.println("Фильм: " + movie);
+
+                }
+                check = true;
+            }
+        }
+        if(!check) System.out.println("Фильмов с таким актером нету!");
+    }
+
+    public static void searchMovieAndRoleByActor(FileService movies){
+        Scanner sc = new Scanner(System.in);
+        boolean check = false;
+        Map<String, List<String[]>> actor = new HashMap<>();
+
+        for(var movie: movies.getMovies()){
+            for(var cast : movie.getCasts()){
+                actor.put(cast.getFullName(), getMovieNameAndRoleByActor(cast.getFullName(), movies.getMovies()));
+            }
+        }
+        System.out.print("Введите частичное или полное имя актера: ");
+        String text = sc.nextLine();
+        for(Map.Entry<String, List<String[]>> kv: actor.entrySet()){
+            if(kv.getKey().toLowerCase().contains(text.toLowerCase(Locale.ROOT))){
+                System.out.println(kv.getKey() + " cнимаeтся в фильмах:");
+                for(var movie: kv.getValue()){
+                    System.out.println("Фильм: " + movie[0] + "\nРоль: " + movie[1]);
+                }
+                check = true;
+            }
+        }
+        if(!check) System.out.println("Фильмов с таким актером нету!");
+
+    }
+
+    public static void searchMovieByYear(FileService movies){
+        Scanner sc = new Scanner(System.in);
+        boolean check = false;
+        int year_number;
+        Map<Integer, List<String>> year = new HashMap<>();
+
+        for(var movie: movies.getMovies()){
+            year.put(movie.getYear(), getMovieNameByYear(movie.getYear(), movies.getMovies()));
+        }
+
+        while (true){
+            System.out.print("Введите год выпуска фильма: ");
+            try {
+                year_number = tryParse(sc.nextLine());
+            }catch (NumberFormatException e){
+                System.out.println("Expected integer");
+                continue;
+            }
+            break;
+        }
+
+        for(Map.Entry<Integer, List<String>> kv: year.entrySet()){
+            if(kv.getKey() == year_number){
+                System.out.println("Фильмы в заданном году:");
+                for(var movie: kv.getValue()){
+                    System.out.println("Фильм: " + movie);
+
+                }
+                check = true;
+            }
+        }
+        if(!check) System.out.println("Таких фильмов не было в заданном году!");
+    }
+
+    static int tryParse(String str) throws NumberFormatException{
+        int number = Integer.parseInt(str);
+        return number;
     }
 
     public static void searchMovieByName(FileService movies){
@@ -66,30 +229,30 @@ public class Main {
     }
 
     public static void sortByName(FileService movies){
-        System.out.println("-----------------------------Отсортирован по названию по возрастанию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по названию в порядке возрастания---------------------------------");
         Comparator sortName = Comparator.comparing(Movie::getName);
         movies.getMovies().sort(sortName);
         printMovies(movies);
-        System.out.println("-----------------------------Отсортирован по названию по убыванию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по названию в порядке убывания---------------------------------");
         movies.getMovies().sort(sortName.reversed());
         printMovies(movies);
     }
 
     public static void sortByDirector(FileService movies){
-        System.out.println("-----------------------------Отсортирован по фамилии директороа по возрастанию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по фамилии директороа в порядке возрастания---------------------------------");
         Collections.sort(movies.getMovies());
         printMovies(movies);
-        System.out.println("-----------------------------Отсортирован по фамилии директороа по убыванию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по фамилии директороа в порядке убывания---------------------------------");
         Collections.sort(movies.getMovies(), Comparator.reverseOrder());
         printMovies(movies);
     }
 
     public static void sortByYear(FileService movies){
-        System.out.println("-----------------------------Отсортирован по году выпуска по возрастанию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по году выпуска в порядке возрастания---------------------------------");
         Comparator sortYear = Comparator.comparing(Movie::getYear);
         movies.getMovies().sort(sortYear);
         printMovies(movies);
-        System.out.println("-----------------------------Отсортирован по году выпуска по убыванию---------------------------------");
+        System.out.println("-----------------------------Отсортирован по году выпуска в порядке убывания---------------------------------");
         movies.getMovies().sort(sortYear.reversed());
         printMovies(movies);
     }
